@@ -19,16 +19,29 @@ const AdminStats = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Demo stats
+      
+      // Get real data from localStorage
+      const pendingUsers = JSON.parse(localStorage.getItem('pending_users') || '[]');
+      const processedUsers = JSON.parse(localStorage.getItem('processed_users') || '[]');
+      const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
+      
+      const allUsers = [...pendingUsers, ...processedUsers, ...registeredUsers];
+      const students = allUsers.filter(u => u.role === 'student');
+      const institutions = allUsers.filter(u => u.role === 'institution');
+      const approvedStudents = students.filter(u => u.status === 'approved');
+      
+      // Get internships (would come from database in production)
+      const internships = []; // Empty for now since no real internships exist yet
+      
       setStats({
-        totalStudents: 150,
-        totalInstitutions: 25,
-        activeInternships: 45,
-        activeReservations: 89,
-        totalSpots: 180,
-        availableSpots: 91,
-        occupiedSpots: 89
+        totalStudents: students.length,
+        totalInstitutions: institutions.length,
+        activeInternships: internships.filter(i => i?.status === 'active').length,
+        activeReservations: 0, // No reservations yet
+        totalSpots: 0, // No spots yet
+        availableSpots: 0, // No available spots yet
+        occupiedSpots: 0, // No occupied spots yet
+        pendingApprovals: pendingUsers.length
       });
     } catch (error) {
       console.error('Error fetching admin stats:', error);
@@ -65,8 +78,8 @@ const AdminStats = () => {
       textColor: 'text-purple-600'
     },
     {
-      title: 'Reservas Ativas',
-      value: stats?.activeReservations || 0,
+      title: 'Aprovações Pendentes',
+      value: stats?.pendingApprovals || 0,
       icon: FiBookmark,
       color: 'bg-orange-500',
       textColor: 'text-orange-600'
@@ -103,63 +116,36 @@ const AdminStats = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Ocupação de Vagas</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Total de Vagas</span>
-              <span className="text-sm font-medium text-gray-900">
-                {stats?.totalSpots || 0}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Vagas Ocupadas</span>
-              <span className="text-sm font-medium text-gray-900">
-                {stats?.occupiedSpots || 0}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Vagas Disponíveis</span>
-              <span className="text-sm font-medium text-gray-900">
-                {stats?.availableSpots || 0}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{
-                  width: `${stats?.totalSpots > 0 ? (stats.occupiedSpots / stats.totalSpots) * 100 : 0}%`
-                }}
-              />
+      {stats?.pendingApprovals > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-center space-x-3">
+            <SafeIcon icon={FiBookmark} className="w-6 h-6 text-yellow-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-yellow-900">
+                Ação Necessária
+              </h3>
+              <p className="text-yellow-700 mt-1">
+                Você tem {stats.pendingApprovals} usuário{stats.pendingApprovals !== 1 ? 's' : ''} aguardando aprovação. 
+                Vá para a aba "Aprovações" para revisar.
+              </p>
             </div>
           </div>
         </div>
+      )}
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumo de Atividade</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Taxa de Ocupação</span>
-              <span className="text-sm font-medium text-gray-900">
-                {stats?.totalSpots > 0 ? Math.round((stats.occupiedSpots / stats.totalSpots) * 100) : 0}%
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Média de Vagas por Instituição</span>
-              <span className="text-sm font-medium text-gray-900">
-                {stats?.totalInstitutions > 0 ? Math.round(stats.activeInternships / stats.totalInstitutions) : 0}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Estudantes com Reservas</span>
-              <span className="text-sm font-medium text-gray-900">
-                {stats?.activeReservations || 0}
-              </span>
-            </div>
+      {stats?.totalStudents === 0 && stats?.totalInstitutions === 0 && (
+        <div className="text-center py-12">
+          <div className="mx-auto h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <SafeIcon icon={FiUsers} className="h-12 w-12 text-gray-400" />
           </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Sistema Inicializado
+          </h3>
+          <p className="text-gray-600">
+            O sistema está pronto para receber os primeiros usuários.
+          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 };

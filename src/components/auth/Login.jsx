@@ -9,19 +9,25 @@ import { useAuth } from '../../context/AuthContext';
 const { FiMail, FiLock, FiEye, FiEyeOff, FiBookOpen } = FiIcons;
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
       toast.error('Por favor, preencha todos os campos');
       return;
@@ -48,33 +54,6 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error.error || 'Erro ao fazer login');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Quick login function for demo
-  const handleQuickLogin = async (email, password) => {
-    setFormData({ email, password });
-    setLoading(true);
-    try {
-      const user = await login(email, password);
-      toast.success('Login realizado com sucesso!');
-      switch (user.role) {
-        case 'admin':
-          navigate('/admin');
-          break;
-        case 'institution':
-          navigate('/institution');
-          break;
-        case 'student':
-          navigate('/student');
-          break;
-        default:
-          navigate('/');
-      }
-    } catch (error) {
       toast.error(error.error || 'Erro ao fazer login');
     } finally {
       setLoading(false);
@@ -158,9 +137,9 @@ const Login = () => {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <SafeIcon
-                    icon={showPassword ? FiEyeOff : FiEye}
-                    className="h-5 w-5 text-gray-400 hover:text-gray-600"
+                  <SafeIcon 
+                    icon={showPassword ? FiEyeOff : FiEye} 
+                    className="h-5 w-5 text-gray-400 hover:text-gray-600" 
                   />
                 </button>
               </div>
@@ -196,30 +175,6 @@ const Login = () => {
               >
                 Cadastrar como Instituição
               </Link>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 text-center mb-3">
-              <strong>Sistema de demonstração:</strong>
-            </p>
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('demo@student.com', 'demo123')}
-                disabled={loading}
-                className="w-full text-xs text-left px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors duration-200 disabled:opacity-50"
-              >
-                🎓 Estudante Demo: demo@student.com / demo123
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('demo@institution.com', 'demo123')}
-                disabled={loading}
-                className="w-full text-xs text-left px-3 py-2 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors duration-200 disabled:opacity-50"
-              >
-                🏢 Instituição Demo: demo@institution.com / demo123
-              </button>
             </div>
           </div>
         </motion.form>

@@ -6,28 +6,38 @@ import Layout from '../common/Layout';
 import AdminStats from './AdminStats';
 import UserManagement from './UserManagement';
 import AdminReports from './AdminReports';
+import UserApprovalManagement from './UserApprovalManagement';
 
-const { FiBarChart3, FiUsers, FiFileText } = FiIcons;
+const { FiBarChart3, FiUsers, FiFileText, FiUserCheck } = FiIcons;
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('stats');
+  const [activeTab, setActiveTab] = useState('approvals');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const tabs = [
+    { id: 'approvals', label: 'Aprovações', icon: FiUserCheck },
     { id: 'stats', label: 'Dashboard', icon: FiBarChart3 },
     { id: 'users', label: 'Usuários', icon: FiUsers },
     { id: 'reports', label: 'Relatórios', icon: FiFileText }
   ];
 
+  // Function to handle user status changes and refresh both tabs
+  const handleUserStatusChange = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
+      case 'approvals':
+        return <UserApprovalManagement key={`approvals-${refreshKey}`} onUserStatusChange={handleUserStatusChange} />;
       case 'stats':
-        return <AdminStats />;
+        return <AdminStats key={`stats-${refreshKey}`} />;
       case 'users':
-        return <UserManagement />;
+        return <UserManagement key={`users-${refreshKey}`} onUserStatusChange={handleUserStatusChange} />;
       case 'reports':
-        return <AdminReports />;
+        return <AdminReports key={`reports-${refreshKey}`} />;
       default:
-        return <AdminStats />;
+        return <UserApprovalManagement key={`approvals-${refreshKey}`} onUserStatusChange={handleUserStatusChange} />;
     }
   };
 

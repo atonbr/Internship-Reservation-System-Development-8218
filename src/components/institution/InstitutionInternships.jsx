@@ -15,65 +15,7 @@ const InstitutionInternships = () => {
   const [internships, setInternships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingInternship, setEditingInternship] = useState(null);
-  const [viewingStudents, setViewingStudents] = useState(null);
-  const [students, setStudents] = useState([]);
-  const [loadingStudents, setLoadingStudents] = useState(false);
   const { user } = useAuth();
-
-  // Demo data
-  const demoInternships = [
-    {
-      id: 'internship-1',
-      institution_id: user?.id,
-      title: 'Estágio em Desenvolvimento Web',
-      description: 'Oportunidade para desenvolver habilidades em React, Node.js e bancos de dados.',
-      total_spots: 5,
-      available_spots: 3,
-      period: 'matutino',
-      shift: '8h às 12h',
-      month_year: '2024-01',
-      address: 'Av. Paulista, 1000 - Bela Vista',
-      city: 'São Paulo',
-      area: 'Tecnologia',
-      status: 'active',
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'internship-2',
-      institution_id: user?.id,
-      title: 'Estágio em UX/UI Design',
-      description: 'Trabalhe com design de interfaces e experiência do usuário.',
-      total_spots: 3,
-      available_spots: 2,
-      period: 'vespertino',
-      shift: '14h às 18h',
-      month_year: '2024-02',
-      address: 'Rua Augusta, 500 - Consolação',
-      city: 'São Paulo',
-      area: 'Design',
-      status: 'active',
-      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  ];
-
-  const demoStudents = [
-    {
-      name: 'João Silva',
-      email: 'joao@email.com',
-      course: 'Engenharia de Software',
-      class_name: '2024.1',
-      reserved_at: new Date().toISOString(),
-      status: 'active'
-    },
-    {
-      name: 'Maria Santos',
-      email: 'maria@email.com',
-      course: 'Ciência da Computação',
-      class_name: '2024.1',
-      reserved_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      status: 'active'
-    }
-  ];
 
   useEffect(() => {
     fetchInternships();
@@ -85,7 +27,14 @@ const InstitutionInternships = () => {
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setInternships(demoInternships);
+
+      // Get internships from localStorage for this institution
+      const storedInternships = JSON.parse(localStorage.getItem('internships') || '[]');
+      const institutionInternships = storedInternships.filter(
+        internship => internship.institution_id === user.id
+      );
+      
+      setInternships(institutionInternships);
     } catch (error) {
       console.error('Error fetching internships:', error);
       toast.error('Erro ao carregar vagas');
@@ -105,6 +54,15 @@ const InstitutionInternships = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Update in localStorage
+      const storedInternships = JSON.parse(localStorage.getItem('internships') || '[]');
+      const updatedInternships = storedInternships.map(internship =>
+        internship.id === internshipId
+          ? { ...internship, status: newStatus }
+          : internship
+      );
+      localStorage.setItem('internships', JSON.stringify(updatedInternships));
 
       setInternships(prev =>
         prev.map(internship =>
@@ -130,62 +88,18 @@ const InstitutionInternships = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
+      // Remove from localStorage
+      const storedInternships = JSON.parse(localStorage.getItem('internships') || '[]');
+      const updatedInternships = storedInternships.filter(
+        internship => internship.id !== internshipId
+      );
+      localStorage.setItem('internships', JSON.stringify(updatedInternships));
+
       setInternships(prev => prev.filter(internship => internship.id !== internshipId));
       toast.success('Vaga excluída com sucesso!');
     } catch (error) {
       console.error('Error deleting internship:', error);
       toast.error('Erro ao excluir vaga');
-    }
-  };
-
-  const handleViewStudents = async (internshipId) => {
-    setViewingStudents(internshipId);
-    setLoadingStudents(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setStudents(demoStudents);
-    } catch (error) {
-      console.error('Error fetching students:', error);
-      toast.error('Erro ao carregar estudantes');
-      setStudents([]);
-    } finally {
-      setLoadingStudents(false);
-    }
-  };
-
-  const handleExportStudents = async (internshipId, internshipTitle) => {
-    try {
-      // Simulate export
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const csvContent = [
-        ['Nome', 'Email', 'Curso', 'Turma', 'Data da Reserva', 'Status'],
-        ...demoStudents.map(student => [
-          student.name,
-          student.email,
-          student.course,
-          student.class_name,
-          new Date(student.reserved_at).toLocaleString('pt-BR'),
-          student.status
-        ])
-      ].map(row => row.join(',')).join('\n');
-
-      // Download file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `estudantes_${internshipTitle.replace(/[^a-zA-Z0-9]/g, '_')}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success('Lista exportada com sucesso!');
-    } catch (error) {
-      console.error('Error exporting students:', error);
-      toast.error('Erro ao exportar lista');
     }
   };
 
@@ -309,26 +223,13 @@ const InstitutionInternships = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => handleViewStudents(internship.id)}
-                        className="flex items-center space-x-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                      >
-                        <SafeIcon icon={FiEye} className="w-4 h-4" />
-                        <span>Ver Inscritos</span>
-                      </button>
-                      <button
-                        onClick={() => handleExportStudents(internship.id, internship.title)}
-                        className="flex items-center space-x-1 px-3 py-1 text-sm text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors duration-200"
-                      >
-                        <SafeIcon icon={FiDownload} className="w-4 h-4" />
-                        <span>Exportar</span>
-                      </button>
-                      <button
                         onClick={() => setEditingInternship(internship)}
                         className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
                       >
                         <SafeIcon icon={FiEdit3} className="w-4 h-4" />
                         <span>Editar</span>
                       </button>
+
                       <button
                         onClick={() => handleStatusToggle(internship.id, internship.status)}
                         className={`flex items-center space-x-1 px-3 py-1 text-sm rounded-lg transition-colors duration-200 ${
@@ -340,6 +241,7 @@ const InstitutionInternships = () => {
                         <SafeIcon icon={internship.status === 'active' ? FiPause : FiPlay} className="w-4 h-4" />
                         <span>{internship.status === 'active' ? 'Encerrar' : 'Reabrir'}</span>
                       </button>
+
                       <button
                         onClick={() => handleDelete(internship.id)}
                         className="flex items-center space-x-1 px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
@@ -378,82 +280,6 @@ const InstitutionInternships = () => {
             fetchInternships();
           }}
         />
-      )}
-
-      {/* Students Modal */}
-      {viewingStudents && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Estudantes Inscritos
-                </h3>
-                <button
-                  onClick={() => setViewingStudents(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <SafeIcon icon={FiX} className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              {loadingStudents ? (
-                <LoadingSpinner text="Carregando estudantes..." />
-              ) : students.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Nome
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Curso
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Turma
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Data da Reserva
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {students.map((student, index) => (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {student.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {student.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {student.course}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {student.class_name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {format(new Date(student.reserved_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <SafeIcon icon={FiUsers} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <p className="text-gray-600">Nenhum estudante inscrito ainda.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

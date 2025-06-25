@@ -23,7 +23,10 @@ const CreateInternship = ({ onSuccess }) => {
   const { user } = useAuth();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -41,8 +44,29 @@ const CreateInternship = ({ onSuccess }) => {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create new internship
+      const newInternship = {
+        id: 'internship-' + Date.now(),
+        institution_id: user.id,
+        institution_name: user.name,
+        title: formData.title,
+        description: formData.description,
+        total_spots: parseInt(formData.totalSpots),
+        available_spots: parseInt(formData.totalSpots),
+        period: formData.period,
+        shift: formData.shift,
+        month_year: formData.monthYear,
+        address: formData.address,
+        city: formData.city,
+        area: formData.area,
+        status: 'active',
+        created_at: new Date().toISOString()
+      };
+
+      // Save to localStorage
+      const existingInternships = JSON.parse(localStorage.getItem('internships') || '[]');
+      existingInternships.push(newInternship);
+      localStorage.setItem('internships', JSON.stringify(existingInternships));
 
       toast.success('Vaga criada com sucesso!');
       
@@ -292,6 +316,7 @@ const CreateInternship = ({ onSuccess }) => {
           >
             Limpar
           </button>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

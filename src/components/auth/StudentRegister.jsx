@@ -48,7 +48,6 @@ const StudentRegister = () => {
     }
 
     setLoading(true);
-
     try {
       const user = await registerStudent({
         email: formData.email,
@@ -58,7 +57,7 @@ const StudentRegister = () => {
         className: formData.className
       });
 
-      toast.success('Conta criada com sucesso!');
+      toast.success('Conta criada com sucesso! Aguarde a aprovação do administrador.');
       navigate('/student');
     } catch (error) {
       console.error('Registration error:', error);
@@ -234,6 +233,21 @@ const StudentRegister = () => {
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                   placeholder="••••••••"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Important Notice */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <SafeIcon icon={FiIcons.FiAlertCircle} className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-medium text-yellow-800 mb-1">
+                  Aprovação Necessária
+                </h3>
+                <p className="text-sm text-yellow-700">
+                  Sua conta será criada com status "pendente" e precisará ser aprovada por um administrador antes que você possa acessar as vagas de estágio.
+                </p>
               </div>
             </div>
           </div>

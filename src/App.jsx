@@ -55,21 +55,15 @@ const AppRoutes = () => {
     <Routes>
       <Route 
         path="/login" 
-        element={
-          !user ? <Login /> : <Navigate to={getDashboardRoute(user.role)} replace />
-        } 
+        element={!user ? <Login /> : <Navigate to={getDashboardRoute(user.role)} replace />} 
       />
       <Route 
         path="/register/student" 
-        element={
-          !user ? <StudentRegister /> : <Navigate to={getDashboardRoute(user.role)} replace />
-        } 
+        element={!user ? <StudentRegister /> : <Navigate to={getDashboardRoute(user.role)} replace />} 
       />
       <Route 
         path="/register/institution" 
-        element={
-          !user ? <InstitutionRegister /> : <Navigate to={getDashboardRoute(user.role)} replace />
-        } 
+        element={!user ? <InstitutionRegister /> : <Navigate to={getDashboardRoute(user.role)} replace />} 
       />
       <Route 
         path="/student/*" 
@@ -148,7 +142,7 @@ function App() {
             <div className="min-h-screen bg-gray-50">
               <NetworkStatus />
               <AppRoutes />
-              <Toaster
+              <Toaster 
                 position="top-right"
                 toastOptions={{
                   duration: 4000,
