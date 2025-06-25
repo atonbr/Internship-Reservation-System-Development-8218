@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, {useState, useEffect} from 'react';
+import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { useAuth } from '../../context/AuthContext';
+import {useAuth} from '../../context/AuthContext';
 
-const { FiBookmark, FiCheck, FiX, FiBarChart3, FiClock, FiRefreshCw } = FiIcons;
+const {FiBookmark, FiCheck, FiX, FiBarChart3, FiClock, FiRefreshCw, FiLock, FiAlertCircle} = FiIcons;
 
 const StudentStats = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const {user} = useAuth();
 
   // Get user reservations from localStorage
   const getUserReservations = () => {
@@ -26,12 +26,18 @@ const StudentStats = () => {
   const fetchStats = async () => {
     try {
       if (!user) return;
+      
+      // Check if user is approved before loading stats
+      if (user.status !== 'approved') {
+        setStats(null);
+        setLoading(false);
+        return;
+      }
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const reservations = getUserReservations();
-      
       const statsData = {
         activeReservations: reservations.filter(r => r.status === 'active' || r.status === 'pending').length,
         approvedReservations: reservations.filter(r => r.status === 'approved').length,
@@ -48,6 +54,32 @@ const StudentStats = () => {
       setLoading(false);
     }
   };
+
+  // If user is not approved, show access denied message
+  if (!user || user.status !== 'approved') {
+    return (
+      <div className="text-center py-12">
+        <div className="mx-auto h-24 w-24 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+          <SafeIcon icon={FiLock} className="h-12 w-12 text-yellow-600" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          Acesso Restrito
+        </h3>
+        <p className="text-gray-600 mb-4">
+          Sua conta precisa ser aprovada pelo administrador para visualizar suas estatísticas.
+        </p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto">
+          <div className="flex items-center space-x-2 text-yellow-800 mb-2">
+            <SafeIcon icon={FiAlertCircle} className="w-4 h-4" />
+            <span className="text-sm font-medium">Status da sua conta:</span>
+          </div>
+          <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+            {user?.status === 'pending' ? 'Pendente de aprovação' : 'Não aprovado'}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <LoadingSpinner text="Carregando estatísticas..." />;
@@ -111,9 +143,9 @@ const StudentStats = () => {
           {statCards.map((card, index) => (
             <motion.div
               key={card.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              initial={{opacity: 0, y: 20}}
+              animate={{opacity: 1, y: 0}}
+              transition={{delay: index * 0.1}}
               className="relative overflow-hidden bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
             >
               <div className="flex items-center mb-3">
@@ -175,22 +207,21 @@ const StudentStats = () => {
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Taxa de Aprovação</span>
               <span className="text-sm font-medium text-gray-900">
-                {stats.totalReservations > 0 
-                  ? Math.round(((stats.approvedReservations + stats.completedReservations) / stats.totalReservations) * 100) 
+                {stats.totalReservations > 0
+                  ? Math.round(((stats.approvedReservations + stats.completedReservations) / stats.totalReservations) * 100)
                   : 0}%
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-green-500 h-2 rounded-full transition-all duration-300"
                 style={{
-                  width: `${stats.totalReservations > 0 
-                    ? ((stats.approvedReservations + stats.completedReservations) / stats.totalReservations) * 100 
+                  width: `${stats.totalReservations > 0
+                    ? ((stats.approvedReservations + stats.completedReservations) / stats.totalReservations) * 100
                     : 0}%`
                 }}
               />
             </div>
-            
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="text-center">
                 <div className="text-lg font-semibold text-gray-900">

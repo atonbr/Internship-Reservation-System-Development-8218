@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, {useState, useEffect} from 'react';
+import {motion, AnimatePresence} from 'framer-motion';
 import toast from 'react-hot-toast';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { useAuth } from '../../context/AuthContext';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import {useAuth} from '../../context/AuthContext';
+import {format} from 'date-fns';
+import {ptBR} from 'date-fns/locale';
 
-const { FiMapPin, FiClock, FiCalendar, FiBuilding, FiX, FiCheck, FiAlertCircle, FiRefreshCw } = FiIcons;
+const {FiMapPin, FiClock, FiCalendar, FiBuilding, FiX, FiCheck, FiAlertCircle, FiRefreshCw, FiLock} = FiIcons;
 
 const MyReservations = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(null);
-  const { user } = useAuth();
+  const {user} = useAuth();
 
   // Get user reservations from localStorage
   const getUserReservations = () => {
@@ -35,6 +35,13 @@ const MyReservations = () => {
   const fetchReservations = async () => {
     try {
       if (!user) return;
+      
+      // Check if user is approved before loading reservations
+      if (user.status !== 'approved') {
+        setReservations([]);
+        setLoading(false);
+        return;
+      }
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -55,6 +62,7 @@ const MyReservations = () => {
     }
 
     setCancelling(reservationId);
+
     try {
       const reservation = reservations.find(r => r.id === reservationId);
       if (!reservation || (reservation.status !== 'active' && reservation.status !== 'pending')) {
@@ -71,7 +79,6 @@ const MyReservations = () => {
           ? { ...res, status: 'cancelled', cancelled_at: new Date().toISOString() }
           : res
       );
-      
       setReservations(updatedReservations);
       saveUserReservations(updatedReservations);
 
@@ -97,14 +104,9 @@ const MyReservations = () => {
 
       const updatedReservations = reservations.map(res =>
         res.id === reservationId
-          ? { 
-              ...res, 
-              status: newStatus,
-              [`${newStatus}_at`]: new Date().toISOString()
-            }
+          ? { ...res, status: newStatus, [`${newStatus}_at`]: new Date().toISOString() }
           : res
       );
-      
       setReservations(updatedReservations);
       saveUserReservations(updatedReservations);
 
@@ -141,6 +143,32 @@ const MyReservations = () => {
   const canReserveNewVaga = () => {
     return !reservations.some(r => r.status === 'active' || r.status === 'pending' || r.status === 'approved');
   };
+
+  // If user is not approved, show access denied message
+  if (!user || user.status !== 'approved') {
+    return (
+      <div className="text-center py-12">
+        <div className="mx-auto h-24 w-24 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+          <SafeIcon icon={FiLock} className="h-12 w-12 text-yellow-600" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          Acesso Restrito
+        </h3>
+        <p className="text-gray-600 mb-4">
+          Sua conta precisa ser aprovada pelo administrador para visualizar suas reservas.
+        </p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto">
+          <div className="flex items-center space-x-2 text-yellow-800 mb-2">
+            <SafeIcon icon={FiAlertCircle} className="w-4 h-4" />
+            <span className="text-sm font-medium">Status da sua conta:</span>
+          </div>
+          <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+            {user?.status === 'pending' ? 'Pendente de aprovação' : 'Não aprovado'}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <LoadingSpinner text="Carregando suas reservas..." />;
@@ -217,9 +245,9 @@ const MyReservations = () => {
             {reservations.map((reservation) => (
               <motion.div
                 key={reservation.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                initial={{opacity: 0, y: 20}}
+                animate={{opacity: 1, y: 0}}
+                exit={{opacity: 0, y: -20}}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200"
               >
                 <div className="p-6">

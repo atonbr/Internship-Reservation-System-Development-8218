@@ -1,9 +1,9 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { Toaster } from 'react-hot-toast';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { SocketProvider } from './context/SocketContext';
+import {HashRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
+import {QueryClient, QueryClientProvider} from 'react-query';
+import {Toaster} from 'react-hot-toast';
+import {AuthProvider, useAuth} from './context/AuthContext';
+import {SocketProvider} from './context/SocketContext';
 
 // Components
 import Login from './components/auth/Login';
@@ -26,8 +26,8 @@ const queryClient = new QueryClient({
   },
 });
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({children, allowedRoles}) => {
+  const {user, loading} = useAuth();
 
   if (loading) {
     return <LoadingSpinner />;
@@ -45,7 +45,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 const AppRoutes = () => {
-  const { user, loading } = useAuth();
+  const {user, loading} = useAuth();
 
   if (loading) {
     return <LoadingSpinner />;
@@ -53,68 +53,86 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route 
-        path="/login" 
-        element={!user ? <Login /> : <Navigate to={getDashboardRoute(user.role)} replace />} 
+      <Route
+        path="/login"
+        element={
+          !user ? (
+            <Login />
+          ) : (
+            <Navigate to={getDashboardRoute(user.role)} replace />
+          )
+        }
       />
-      <Route 
-        path="/register/student" 
-        element={!user ? <StudentRegister /> : <Navigate to={getDashboardRoute(user.role)} replace />} 
+      <Route
+        path="/register/student"
+        element={
+          !user ? (
+            <StudentRegister />
+          ) : (
+            <Navigate to={getDashboardRoute(user.role)} replace />
+          )
+        }
       />
-      <Route 
-        path="/register/institution" 
-        element={!user ? <InstitutionRegister /> : <Navigate to={getDashboardRoute(user.role)} replace />} 
+      <Route
+        path="/register/institution"
+        element={
+          !user ? (
+            <InstitutionRegister />
+          ) : (
+            <Navigate to={getDashboardRoute(user.role)} replace />
+          )
+        }
       />
-      <Route 
-        path="/student/*" 
+      <Route
+        path="/student/*"
         element={
           <ProtectedRoute allowedRoles={['student']}>
             <StudentDashboard />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/institution/*" 
+      <Route
+        path="/institution/*"
         element={
           <ProtectedRoute allowedRoles={['institution']}>
             <InstitutionDashboard />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/admin/*" 
+      <Route
+        path="/admin/*"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminDashboard />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/unauthorized" 
+      <Route
+        path="/unauthorized"
         element={
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-red-600 mb-4">Acesso Negado</h1>
               <p className="text-gray-600 mb-4">Você não tem permissão para acessar esta página.</p>
-              <button 
-                onClick={() => window.history.back()} 
+              <button
+                onClick={() => window.history.back()}
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
               >
                 Voltar
               </button>
             </div>
           </div>
-        } 
+        }
       />
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
           user ? (
             <Navigate to={getDashboardRoute(user.role)} replace />
           ) : (
             <Navigate to="/login" replace />
           )
-        } 
+        }
       />
     </Routes>
   );
@@ -142,7 +160,7 @@ function App() {
             <div className="min-h-screen bg-gray-50">
               <NetworkStatus />
               <AppRoutes />
-              <Toaster 
+              <Toaster
                 position="top-right"
                 toastOptions={{
                   duration: 4000,

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import React, {createContext, useContext, useState, useEffect} from 'react';
+import {supabase} from '../lib/supabase';
 
 const AuthContext = createContext();
 
@@ -11,7 +11,7 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     // Get initial session
     const getSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {data: {session}} = await supabase.auth.getSession();
         if (session?.user) {
           await loadUserProfile(session.user);
         }
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     getSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const {data: {subscription}} = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         if (session?.user) {
           await loadUserProfile(session.user);
@@ -88,10 +88,15 @@ export const AuthProvider = ({ children }) => {
       } else {
         // Check if it's a registered user from localStorage
         const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
-        const foundUser = registeredUsers.find(u => u.email === email && u.password === password);
+        const pendingUsers = JSON.parse(localStorage.getItem('pending_users') || '[]');
+        const processedUsers = JSON.parse(localStorage.getItem('processed_users') || '[]');
+        
+        // Check in all user lists
+        const allUsers = [...registeredUsers, ...pendingUsers, ...processedUsers];
+        const foundUser = allUsers.find(u => u.email === email && u.password === password);
         
         if (foundUser) {
-          const { password: _, ...userWithoutPassword } = foundUser;
+          const {password: _, ...userWithoutPassword} = foundUser;
           setUser(userWithoutPassword);
           return userWithoutPassword;
         }
@@ -100,7 +105,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      throw { error: error.message || 'Erro ao fazer login' };
+      throw {error: error.message || 'Erro ao fazer login'};
     }
   };
 
@@ -112,13 +117,13 @@ export const AuthProvider = ({ children }) => {
         password: userData.password, // In production, this should be hashed
         name: userData.name,
         role: 'student',
-        status: 'pending',
+        status: 'pending', // Changed back to pending - needs admin approval
         course: userData.course,
         class_name: userData.className,
         created_at: new Date().toISOString()
       };
 
-      // Save to pending users for admin approval
+      // Save to pending users (needs approval)
       const existingPendingUsers = JSON.parse(localStorage.getItem('pending_users') || '[]');
       existingPendingUsers.push(newUser);
       localStorage.setItem('pending_users', JSON.stringify(existingPendingUsers));
@@ -127,7 +132,7 @@ export const AuthProvider = ({ children }) => {
       return newUser;
     } catch (error) {
       console.error('Student registration error:', error);
-      throw { error: error.message || 'Erro no cadastro' };
+      throw {error: error.message || 'Erro no cadastro'};
     }
   };
 
@@ -139,14 +144,14 @@ export const AuthProvider = ({ children }) => {
         password: userData.password, // In production, this should be hashed
         name: userData.name,
         role: 'institution',
-        status: 'pending', // Changed to pending - institutions also need approval
+        status: 'pending', // Changed back to pending - needs admin approval
         cnpj: userData.cnpj,
         address: userData.address,
         phone: userData.phone,
         created_at: new Date().toISOString()
       };
 
-      // Save to pending users for admin approval (same as students)
+      // Save to pending users (needs approval)
       const existingPendingUsers = JSON.parse(localStorage.getItem('pending_users') || '[]');
       existingPendingUsers.push(newUser);
       localStorage.setItem('pending_users', JSON.stringify(existingPendingUsers));
@@ -155,7 +160,7 @@ export const AuthProvider = ({ children }) => {
       return newUser;
     } catch (error) {
       console.error('Institution registration error:', error);
-      throw { error: error.message || 'Erro no cadastro' };
+      throw {error: error.message || 'Erro no cadastro'};
     }
   };
 
