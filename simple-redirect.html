@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estágios - Redirecionando</title>
+    <meta http-equiv="refresh" content="3;url=https://praticafaunaemfoco.netlify.app">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 500px;
+            margin: 20px;
+        }
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 1rem 0;
+            color: white;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            opacity: 0.9;
+        }
+        .new-link {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .new-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .countdown {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            font-weight: 600;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+    </style>
+    <script>
+        let countdown = 3;
+        
+        function updateCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            if (countdownElement) {
+                countdownElement.textContent = countdown;
+            }
+            
+            if (countdown <= 0) {
+                window.location.href = "https://praticafaunaemfoco.netlify.app";
+            } else {
+                countdown--;
+                setTimeout(updateCountdown, 1000);
+            }
+        }
+        
+        window.onload = function() {
+            updateCountdown();
+        };
+        
+        // Fallback redirect
+        setTimeout(function() {
+            window.location.href = "https://praticafaunaemfoco.netlify.app";
+        }, 4000);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎓</div>
+        <h1>Sistema de Estágios</h1>
+        <div class="subtitle">
+            <div class="loading"></div>
+            Redirecionando para o novo site...
+        </div>
+        
+        <div class="countdown">
+            Redirecionamento em <span id="countdown">3</span> segundos
+        </div>
+        
+        <a href="https://praticafaunaemfoco.netlify.app" class="new-link">
+            🚀 Ir para o novo site agora
+        </a>
+        
+        <div class="footer">
+            <p><strong>Novo endereço:</strong><br>
+            https://praticafaunaemfoco.netlify.app</p>
+            <p><small>Atualize seus bookmarks para o novo endereço</small></p>
+        </div>
+    </div>
+</body>
+</html>

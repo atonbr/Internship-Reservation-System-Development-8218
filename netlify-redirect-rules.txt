@@ -1,0 +1,24 @@
+# REGRAS DE REDIRECIONAMENTO PARA NETLIFY
+
+## Para configurar no painel do Netlify:
+
+### 1. Acesse o site antigo (effervescent-hamster-624d2a)
+### 2. Vá em Site Settings > Build & deploy > Post processing > Redirects and rewrites
+### 3. Adicione esta regra:
+
+From: /*
+To: https://praticafaunaemfoco.netlify.app/:splat
+Status: 301
+Force: Yes
+
+## OU crie um arquivo _redirects na raiz do projeto antigo:
+
+/* https://praticafaunaemfoco.netlify.app/:splat 301!
+
+## OU use o arquivo netlify.toml:
+
+[[redirects]]
+  from = "/*"
+  to = "https://praticafaunaemfoco.netlify.app/:splat"
+  status = 301
+  force = true
