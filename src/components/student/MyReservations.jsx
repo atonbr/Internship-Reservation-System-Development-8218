@@ -8,7 +8,7 @@ import {useAuth} from '../../context/AuthContext';
 import {format} from 'date-fns';
 import {ptBR} from 'date-fns/locale';
 
-const {FiMapPin, FiClock, FiCalendar, FiBuilding, FiX, FiCheck, FiAlertCircle, FiRefreshCw, FiLock} = FiIcons;
+const {FiMapPin, FiClock, FiCalendar, FiBuilding, FiX, FiCheck, FiAlertCircle, FiRefreshCw, FiLock, FiShield} = FiIcons;
 
 const MyReservations = () => {
   const [reservations, setReservations] = useState([]);
@@ -35,7 +35,7 @@ const MyReservations = () => {
   const fetchReservations = async () => {
     try {
       if (!user) return;
-      
+
       // Check if user is approved before loading reservations
       if (user.status !== 'approved') {
         setReservations([]);
@@ -45,7 +45,7 @@ const MyReservations = () => {
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const userReservations = getUserReservations();
       setReservations(userReservations);
     } catch (error) {
@@ -57,6 +57,14 @@ const MyReservations = () => {
   };
 
   const handleCancelReservation = async (reservationId) => {
+    const reservation = reservations.find(r => r.id === reservationId);
+    
+    // Check if reservation is approved by institution
+    if (reservation?.status === 'approved') {
+      toast.error('Não é possível cancelar uma candidatura aprovada pela instituição. Entre em contato com a instituição para cancelar.');
+      return;
+    }
+
     if (!window.confirm('Tem certeza que deseja cancelar esta reserva?')) {
       return;
     }
@@ -64,7 +72,6 @@ const MyReservations = () => {
     setCancelling(reservationId);
 
     try {
-      const reservation = reservations.find(r => r.id === reservationId);
       if (!reservation || (reservation.status !== 'active' && reservation.status !== 'pending')) {
         toast.error('Reserva não encontrada ou já processada');
         return;
@@ -76,9 +83,14 @@ const MyReservations = () => {
       // Update local state
       const updatedReservations = reservations.map(res =>
         res.id === reservationId
-          ? { ...res, status: 'cancelled', cancelled_at: new Date().toISOString() }
+          ? {
+              ...res,
+              status: 'cancelled',
+              cancelled_at: new Date().toISOString()
+            }
           : res
       );
+
       setReservations(updatedReservations);
       saveUserReservations(updatedReservations);
 
@@ -104,9 +116,14 @@ const MyReservations = () => {
 
       const updatedReservations = reservations.map(res =>
         res.id === reservationId
-          ? { ...res, status: newStatus, [`${newStatus}_at`]: new Date().toISOString() }
+          ? {
+              ...res,
+              status: newStatus,
+              [`${newStatus}_at`]: new Date().toISOString()
+            }
           : res
       );
+
       setReservations(updatedReservations);
       saveUserReservations(updatedReservations);
 
@@ -118,12 +135,36 @@ const MyReservations = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      active: { color: 'bg-green-100 text-green-800', icon: FiCheck, text: 'Ativa' },
-      pending: { color: 'bg-yellow-100 text-yellow-800', icon: FiClock, text: 'Pendente' },
-      approved: { color: 'bg-blue-100 text-blue-800', icon: FiCheck, text: 'Aprovada' },
-      rejected: { color: 'bg-red-100 text-red-800', icon: FiX, text: 'Rejeitada' },
-      completed: { color: 'bg-purple-100 text-purple-800', icon: FiCheck, text: 'Concluída' },
-      cancelled: { color: 'bg-gray-100 text-gray-800', icon: FiX, text: 'Cancelada' }
+      active: {
+        color: 'bg-yellow-100 text-yellow-800',
+        icon: FiClock,
+        text: 'Pendente'
+      },
+      pending: {
+        color: 'bg-yellow-100 text-yellow-800',
+        icon: FiClock,
+        text: 'Pendente'
+      },
+      approved: {
+        color: 'bg-green-100 text-green-800',
+        icon: FiCheck,
+        text: 'Aprovada'
+      },
+      rejected: {
+        color: 'bg-red-100 text-red-800',
+        icon: FiX,
+        text: 'Rejeitada'
+      },
+      completed: {
+        color: 'bg-purple-100 text-purple-800',
+        icon: FiCheck,
+        text: 'Concluída'
+      },
+      cancelled: {
+        color: 'bg-gray-100 text-gray-800',
+        icon: FiX,
+        text: 'Cancelada'
+      }
     };
 
     const config = statusConfig[status] || statusConfig.active;
@@ -136,12 +177,18 @@ const MyReservations = () => {
     );
   };
 
-  const canCancelReservation = (status) => {
-    return status === 'active' || status === 'pending';
+  const canCancelReservation = (reservation) => {
+    // Can only cancel if status is active/pending AND not approved by institution
+    return (reservation.status === 'active' || reservation.status === 'pending') && 
+           reservation.status !== 'approved';
   };
 
   const canReserveNewVaga = () => {
-    return !reservations.some(r => r.status === 'active' || r.status === 'pending' || r.status === 'approved');
+    return !reservations.some(r => 
+      r.status === 'active' || 
+      r.status === 'pending' || 
+      r.status === 'approved'
+    );
   };
 
   // If user is not approved, show access denied message
@@ -188,19 +235,19 @@ const MyReservations = () => {
             <span>Atualizar</span>
           </button>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-yellow-600">
               {reservations.filter(r => r.status === 'active' || r.status === 'pending').length}
             </div>
-            <div className="text-sm text-gray-600">Ativas/Pendentes</div>
+            <div className="text-sm text-gray-600">Pendentes</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-green-600">
               {reservations.filter(r => r.status === 'approved' || r.status === 'completed').length}
             </div>
-            <div className="text-sm text-gray-600">Aprovadas/Concluídas</div>
+            <div className="text-sm text-gray-600">Aprovadas</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-red-600">
@@ -263,7 +310,13 @@ const MyReservations = () => {
                     </div>
                     <div className="flex items-center space-x-3">
                       {getStatusBadge(reservation.status)}
-                      {canCancelReservation(reservation.status) && (
+                      {reservation.status === 'approved' && (
+                        <div className="flex items-center space-x-1 text-xs text-green-600">
+                          <SafeIcon icon={FiShield} className="w-3 h-3" />
+                          <span>Protegida</span>
+                        </div>
+                      )}
+                      {canCancelReservation(reservation) && (
                         <button
                           onClick={() => handleCancelReservation(reservation.id)}
                           disabled={cancelling === reservation.id}
@@ -297,23 +350,48 @@ const MyReservations = () => {
                     </div>
                   </div>
 
+                  {/* Status-specific messages */}
+                  {reservation.status === 'approved' && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                      <div className="flex items-start space-x-2">
+                        <SafeIcon icon={FiShield} className="w-4 h-4 text-green-600 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-green-900">
+                            Candidatura Aprovada pela Instituição
+                          </p>
+                          <p className="text-sm text-green-700 mt-1">
+                            Sua candidatura foi aprovada! Você não pode mais cancelar esta reserva. 
+                            Entre em contato com a instituição se precisar fazer alterações.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {reservation.rejection_reason && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                      <p className="text-sm font-medium text-red-900 mb-1">Motivo da rejeição:</p>
+                      <p className="text-sm text-red-700">{reservation.rejection_reason}</p>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>
-                      Reservado em {format(new Date(reservation.reserved_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                      Reservado em {format(new Date(reservation.reserved_at), 'dd/MM/yyyy HH:mm', {locale: ptBR})}
                     </span>
                     {reservation.cancelled_at && (
                       <span className="text-red-600">
-                        Cancelado em {format(new Date(reservation.cancelled_at), 'dd/MM/yyyy', { locale: ptBR })}
+                        Cancelado em {format(new Date(reservation.cancelled_at), 'dd/MM/yyyy', {locale: ptBR})}
                       </span>
                     )}
                     {reservation.approved_at && (
-                      <span className="text-blue-600">
-                        Aprovado em {format(new Date(reservation.approved_at), 'dd/MM/yyyy', { locale: ptBR })}
+                      <span className="text-green-600">
+                        Aprovado em {format(new Date(reservation.approved_at), 'dd/MM/yyyy', {locale: ptBR})}
                       </span>
                     )}
                     {reservation.rejected_at && (
                       <span className="text-red-600">
-                        Rejeitado em {format(new Date(reservation.rejected_at), 'dd/MM/yyyy', { locale: ptBR })}
+                        Rejeitado em {format(new Date(reservation.rejected_at), 'dd/MM/yyyy', {locale: ptBR})}
                       </span>
                     )}
                   </div>
@@ -327,14 +405,14 @@ const MyReservations = () => {
                     </div>
                   )}
 
-                  {/* Demo buttons for testing status changes */}
+                  {/* Demo buttons for testing status changes (only for pending reservations) */}
                   {reservation.status === 'active' && (
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <p className="text-xs text-gray-500 mb-2">Demo: Simular ações da instituição</p>
                       <div className="flex space-x-2">
                         <button
                           onClick={() => simulateStatusChange(reservation.id, 'approved')}
-                          className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                          className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
                         >
                           Aprovar
                         </button>

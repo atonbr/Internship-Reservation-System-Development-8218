@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, {useState, useEffect} from 'react';
+import {motion} from 'framer-motion';
 import toast from 'react-hot-toast';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 
-const { FiX, FiMail, FiUser, FiBuilding, FiPhone, FiMapPin, FiBookOpen, FiUsers, FiCamera, FiTrash2 } = FiIcons;
+const {FiX, FiMail, FiUser, FiBuilding, FiPhone, FiMapPin, FiBookOpen, FiUsers, FiCamera, FiTrash2} = FiIcons;
 
-const EditUserModal = ({ user, onClose, onSubmit }) => {
+const EditUserModal = ({user, onClose, onSubmit}) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -64,7 +64,6 @@ const EditUserModal = ({ user, onClose, onSubmit }) => {
       }
 
       setProfileImage(file);
-      
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
@@ -92,6 +91,7 @@ const EditUserModal = ({ user, onClose, onSubmit }) => {
     }
 
     setLoading(true);
+
     try {
       const updatedData = {
         ...formData,
@@ -105,12 +105,17 @@ const EditUserModal = ({ user, onClose, onSubmit }) => {
     }
   };
 
+  const turmaOptions = [
+    {value: 'Turma 1', label: 'Turma 1'}
+    // Futuras turmas podem ser adicionadas aqui
+  ];
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
+        initial={{opacity: 0, scale: 0.95}}
+        animate={{opacity: 1, scale: 1}}
+        exit={{opacity: 0, scale: 0.95}}
         className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden"
       >
         <div className="p-6 border-b border-gray-200">
@@ -129,7 +134,6 @@ const EditUserModal = ({ user, onClose, onSubmit }) => {
 
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           <div className="space-y-6">
-            
             {/* Profile Image Section */}
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">
@@ -154,7 +158,6 @@ const EditUserModal = ({ user, onClose, onSubmit }) => {
                   </button>
                 )}
               </div>
-              
               <div className="flex items-center space-x-3">
                 <label className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 cursor-pointer transition-colors duration-200">
                   <SafeIcon icon={FiCamera} className="w-4 h-4" />
@@ -279,15 +282,27 @@ const EditUserModal = ({ user, onClose, onSubmit }) => {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <SafeIcon icon={FiUsers} className="h-5 w-5 text-gray-400" />
                       </div>
-                      <input
-                        type="text"
+                      <select
                         id="class_name"
                         name="class_name"
                         required
                         value={formData.class_name}
                         onChange={handleChange}
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      />
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none bg-white"
+                      >
+                        <option value="">Selecione a turma</option>
+                        {turmaOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      {/* Custom dropdown arrow */}
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -399,8 +414,8 @@ const EditUserModal = ({ user, onClose, onSubmit }) => {
                 Cancelar
               </button>
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{scale: 1.02}}
+                whileTap={{scale: 0.98}}
                 type="submit"
                 disabled={loading}
                 className="px-6 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"

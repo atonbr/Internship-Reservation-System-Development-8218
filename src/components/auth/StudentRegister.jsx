@@ -33,7 +33,7 @@ const StudentRegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('As senhas não coincidem');
       return;
@@ -55,6 +55,7 @@ const StudentRegister = () => {
     }
 
     setLoading(true);
+
     try {
       const user = await registerStudent({
         email: formData.email,
@@ -63,7 +64,7 @@ const StudentRegister = () => {
         course: formData.course,
         className: formData.className
       });
-      
+
       toast.success('Conta criada com sucesso! Aguarde a aprovação do administrador.');
       navigate('/student');
     } catch (error) {
@@ -100,7 +101,7 @@ const StudentRegister = () => {
           <p className="mb-4">
             Pelo presente instrumento particular, o(a) Aluno(a) Candidato(a) que realiza seu cadastro no sistema de gerenciamento de vagas da pós-graduação "Fauna em Foco" ("Sistema"), declara ter lido, compreendido e aceito todas as cláusulas a seguir, obrigando-se a cumpri-las integralmente.
           </p>
-
+          
           <div className="space-y-6">
             <div>
               <h4 className="font-semibold text-gray-900 mb-2">1. Objeto</h4>
@@ -219,7 +220,7 @@ const StudentRegister = () => {
             transition={{delay: 0.2, duration: 0.5}}
             className="mx-auto h-20 w-20 mb-6 flex items-center justify-center"
           >
-            <img 
+            <img
               src="https://quest-media-storage-bucket.s3.us-east-2.amazonaws.com/1750816712038-Logo%20500%20x%20500%20Azul.png"
               alt="Logo Fauna em Foco"
               className="h-20 w-20 object-contain"
@@ -315,16 +316,24 @@ const StudentRegister = () => {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <SafeIcon icon={FiUsers} className="h-5 w-5 text-gray-400" />
                 </div>
-                <input
+                <select
                   id="className"
                   name="className"
-                  type="text"
                   required
                   value={formData.className}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Ex: 2024.1 - Noturno"
-                />
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+                >
+                  <option value="">Selecione sua turma</option>
+                  <option value="Turma 1">Turma 1</option>
+                  {/* Futuras turmas podem ser adicionadas aqui */}
+                </select>
+                {/* Custom dropdown arrow */}
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
 
